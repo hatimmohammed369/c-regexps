@@ -1,7 +1,7 @@
 #ifndef TOKENS_H
 #define TOKENS_H
 
-#include <stddef.h>
+#include "../common.h"
 
 enum _TokenType {
     EndMarker,
