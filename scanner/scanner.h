@@ -1,7 +1,6 @@
 #ifndef SCANNER_H
 #define SCANNER_H
 
-#include <stdbool.h>
 #include "./tokens.h"
 
 struct _Scanner {
@@ -12,5 +11,7 @@ struct _Scanner {
 };
 
 typedef struct _Scanner Scanner;
+
+Scanner new_scanner(char* source, size_t length);
 
 #endif
