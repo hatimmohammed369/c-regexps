@@ -4,6 +4,7 @@
 #include "../common.h"
 
 enum _TokenType {
+    Empty,
     EndMarker,
 };
 

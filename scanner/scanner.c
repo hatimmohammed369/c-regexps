@@ -3,17 +3,18 @@
 Scanner new_scanner(char* source, size_t length) {
     char* source_copy = malloc(length);
     memcpy(source_copy, source, length);
-    Scanner new_scanner = {
+    return (Scanner){
       .source = source_copy,
-      .length = length,
+      .source_length = length,
       .current = 0,
       .found_empty_string = false,
     };
-    return new_scanner;
 }
 
 static const char* token_type_name(TokenType t) {
     switch (t) {
+    case Empty:
+        return "Empty";
     case EndMarker:
         return "EndMarker";
     }
@@ -25,15 +26,61 @@ void print_token(Token t) {
     printf("\n");
 }
 
-static bool has_next(Scanner s) {
-    return s.current < s.length;
-}
-
 static Token make_end_marker(size_t source_length) {
     return (Token){.type = EndMarker, .lexeme="", .length=0, .position=source_length};
 }
 
-Token get_next_token(Scanner s) {
-    s.current += 1;
-    return make_end_marker(s.length);
+static Token make_empty_token(size_t position) {
+        return (Token){.type = Empty, .lexeme="", .length=0, .position=position};
+}
+
+static bool has_next(Scanner* s) {
+    return s->current < s->source_length;
+}
+
+static char previous_char(Scanner* s) {
+    return s->current == 0 ? '\0' : s->source[s->current - 1];
+}
+
+static char peek_char(Scanner* s) {
+    return !has_next(s) ? '\0' : s->source[s->current];
+}
+
+Token get_next_token(Scanner* s) {
+    bool is_previous_char_escaped = false;
+    if (s->current >= 2) {
+        is_previous_char_escaped = s->source[s->current - 2] == '\\';
+    }
+
+    if (!is_previous_char_escaped && !s->found_empty_string) {
+        // We did the check
+        // Do not attempt to generated empty string token in next iteration
+        s->found_empty_string = true;
+        char previous = previous_char(s);
+        char peek = peek_char(s);
+        if (
+            // The seven places a empty string token can be generated
+            // An empty source string
+            s->source_length == 0 ||
+            // Before the leading | if source string begins with a |
+            s->current == 0 && previous == '\0' && peek == '|' ||
+            // After the trailing | if source string ends with a |
+            s->current == s->source_length && previous == '|' && peek == '\0' ||
+            // Between two consecutive |'s
+            previous == '|' && peek == '|' ||
+            // After a ( which is followed by a |
+            previous == '(' && peek == '|' ||
+            // After a | which is followed by )
+            previous == '|' && peek == ')' ||
+            // After a ( which is followed )
+            previous == '(' && peek == ')'
+        ) {
+            return make_empty_token(s->current);
+        }
+    }
+
+    // Attempt to generated empty string token in next iteration
+    s->found_empty_string = false;
+    s->current += 1;
+    return make_end_marker(s->source_length);
 }
