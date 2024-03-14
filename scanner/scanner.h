@@ -13,5 +13,7 @@ struct _Scanner {
 typedef struct _Scanner Scanner;
 
 Scanner new_scanner(char* source, size_t length);
+Token get_next_token(Scanner s);
+void print_token(Token t);
 
 #endif
