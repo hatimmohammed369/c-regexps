@@ -20,12 +20,18 @@ const char* token_type_name(TokenType t) {
         return "Or";
     case Plus:
         return "Plus";
+    case PossessiveMark:
+        return "PossessiveMark";
+    case PossessiveStar:
+        return "PossessiveStar";
+    case PossessivePlus:
+        return "PossessivePlus";
     case RightParen:
         return "RightParen";
     case Star:
         return "Star";
     }
-    return "Unknown";
+    return "UNKNOWN";
 }
 
 void print_token(Token t) {

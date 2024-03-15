@@ -13,6 +13,9 @@ enum _TokenType {
     Mark, // ?
     Or, // |
     Plus, // +
+    PossessiveMark, // ?+
+    PossessiveStar, // *+
+    PossessivePlus, // ++
     RightParen, // )
     Star, // *
 };

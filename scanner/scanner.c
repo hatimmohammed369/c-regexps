@@ -85,6 +85,7 @@ Token get_next_token(Scanner* s) {
     next_token.lexeme[0] = peek;
     next_token.lexeme[1] = '\0';
 
+    char next = next_char(s);
     switch (peek) {
         case '(':
             next_token.type = LeftParen;
@@ -99,11 +100,15 @@ Token get_next_token(Scanner* s) {
             break;
 
         case '?':
-            char next = next_char(s);
             if (next == '?') {
                 s->current++;
                 next_token.type = LazyMark;
                 next_token.lexeme = "??";
+                next_token.length = 2;
+            } else if (next == '+') {
+                s->current++;
+                next_token.type = PossessiveMark;
+                next_token.lexeme = "?+";
                 next_token.length = 2;
             } else {
                 next_token.type = Mark;
@@ -111,11 +116,15 @@ Token get_next_token(Scanner* s) {
             break;
 
         case '*':
-            next = next_char(s);
             if (next == '?') {
                 s->current++;
                 next_token.type = LazyStar;
                 next_token.lexeme = "*?";
+                next_token.length = 2;
+            } else if (next == '+') {
+                s->current++;
+                next_token.type = PossessiveStar;
+                next_token.lexeme = "*+";
                 next_token.length = 2;
             } else {
                 next_token.type = Star;
@@ -123,11 +132,15 @@ Token get_next_token(Scanner* s) {
             break;
 
         case '+':
-            next = next_char(s);
             if (next == '?') {
                 s->current++;
                 next_token.type = LazyPlus;
                 next_token.lexeme = "+?";
+                next_token.length = 2;
+            } else if (next == '+') {
+                s->current++;
+                next_token.type = PossessivePlus;
+                next_token.lexeme = "++";
                 next_token.length = 2;
             } else {
                 next_token.type = Plus;
