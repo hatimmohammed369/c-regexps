@@ -2,14 +2,14 @@
 
 const char* token_type_name(TokenType t) {
     switch (t) {
-    case StartAnchor:
-        return "StartAnchor";
+    case Digit:
+        return "Digit";
     case Empty:
         return "Empty";
-    case EndMarker:
-        return "EndMarker";
     case EndAnchor:
         return "EndAnchor";
+    case EndMarker:
+        return "EndMarker";
     case LazyMark:
         return "LazyMark";
     case LazyPlus:
@@ -20,20 +20,32 @@ const char* token_type_name(TokenType t) {
         return "LeftParen";
     case Mark:
         return "Mark";
+    case NonDigit:
+        return "NonDigit";
+    case NonWhitespace:
+        return "NonWhitespace";
+    case NonWordBoundary:
+        return "NonWordBoundary";
     case Or:
         return "Or";
     case Plus:
         return "Plus";
     case PossessiveMark:
         return "PossessiveMark";
-    case PossessiveStar:
-        return "PossessiveStar";
     case PossessivePlus:
         return "PossessivePlus";
+    case PossessiveStar:
+        return "PossessiveStar";
     case RightParen:
         return "RightParen";
     case Star:
         return "Star";
+    case StartAnchor:
+        return "StartAnchor";
+    case Whitespace:
+        return "Whitespace";
+    case WordBoundary:
+        return "WordBoundary";
     }
     return "UNKNOWN";
 }

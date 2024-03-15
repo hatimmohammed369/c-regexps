@@ -99,6 +99,40 @@ Token get_next_token(Scanner* s) {
             }
             break;
 
+        case '\\':
+            if (next == 'd') {
+                s->current++;
+                next_token.type = Digit;
+                next_token.lexeme = "\\d";
+                next_token.length = 2;
+            } else if (next == 'D') {
+                s->current++;
+                next_token.type = NonDigit;
+                next_token.lexeme = "\\D";
+                next_token.length = 2;
+            } else if (next == 'w') {
+                s->current++;
+                next_token.type = WordBoundary;
+                next_token.lexeme = "\\w";
+                next_token.length = 2;
+            } else if (next == 'W') {
+                s->current++;
+                next_token.type = NonWordBoundary;
+                next_token.lexeme = "\\W";
+                next_token.length = 2;
+            } else if (next == 's') {
+                s->current++;
+                next_token.type = Whitespace;
+                next_token.lexeme = "\\s";
+                next_token.length = 2;
+            } else if (next == 'S') {
+                s->current++;
+                next_token.type = NonWhitespace;
+                next_token.lexeme = "\\S";
+                next_token.length = 2;
+            }
+            break;
+
         case '(':
             next_token.type = LeftParen;
             break;

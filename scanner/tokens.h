@@ -4,7 +4,7 @@
 #include "../common.h"
 
 enum _TokenType {
-    StartAnchor, // ^
+    Digit, // \d
     Empty,
     EndAnchor, // $
     EndMarker,
@@ -13,13 +13,19 @@ enum _TokenType {
     LazyStar, // *?
     LeftParen, // (
     Mark, // ?
+    NonDigit, // \D
+    NonWhitespace, // \S
+    NonWordBoundary,
     Or, // |
     Plus, // +
     PossessiveMark, // ?+
-    PossessiveStar, // *+
     PossessivePlus, // ++
+    PossessiveStar, // *+
     RightParen, // )
     Star, // *
+    StartAnchor, // ^
+    Whitespace, // \s
+    WordBoundary, // \w
 };
 
 typedef enum _TokenType TokenType;
