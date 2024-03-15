@@ -3,7 +3,7 @@
 Scanner new_scanner(char* source, size_t length) {
     char* source_copy = malloc(length);
     memcpy(source_copy, source, length);
-    return (Scanner){
+    return (Scanner) {
       .source = source_copy,
       .source_length = length,
       .current = 0,
@@ -19,13 +19,16 @@ static const char* token_type_name(TokenType t) {
         return "EndMarker";
     case LeftParen:
         return "LeftParen";
+    case Or:
+        return "Or";
     case RightParen:
         return "RightParen";
     }
+    return "Unknown";
 }
 
 void print_token(Token t) {
-    printf("Token { type = %s, lexeme = %s, length = %d, position = %d}",
+    printf("Token { type = %s, lexeme = %s, length = %u, position = %u }",
            token_type_name(t.type), t.lexeme, t.length, t.position);
     printf("\n");
 }
@@ -56,12 +59,12 @@ Token get_next_token(Scanner* s) {
         is_previous_char_escaped = s->source[s->current - 2] == '\\';
     }
 
+    char peek = peek_char(s);
     if (!is_previous_char_escaped && !s->found_empty_string) {
         // We did the check
         // Do not attempt to generated empty string token in next iteration
         s->found_empty_string = true;
         char previous = previous_char(s);
-        char peek = peek_char(s);
         if (
             // The seven places a empty string token can be generated
             // An empty source string
@@ -93,20 +96,24 @@ Token get_next_token(Scanner* s) {
     Token next_token = (Token) {
         .type = EndMarker,
         .lexeme = "",
-        .length = 0,
+        .length = 1,
         .position = s->current,
     };
+    next_token.lexeme = malloc(2);
+    next_token.lexeme[0] = peek;
+    next_token.lexeme[1] = '\0';
 
     switch (peek_char(s)) {
         case '(':
             next_token.type = LeftParen;
-            next_token.lexeme = "(";
-            next_token.length = 1;
             break;
+
         case ')':
             next_token.type = RightParen;
-            next_token.lexeme = ")";
-            next_token.length = 1;
+            break;
+
+        case '|':
+            next_token.type = Or;
             break;
     }
 
