@@ -4,7 +4,9 @@
 #include "../common.h"
 
 enum _TokenType {
+    StartAnchor, // ^
     Empty,
+    EndAnchor, // $
     EndMarker,
     LazyMark, // ??
     LazyPlus, // +?

@@ -2,10 +2,14 @@
 
 const char* token_type_name(TokenType t) {
     switch (t) {
+    case StartAnchor:
+        return "StartAnchor";
     case Empty:
         return "Empty";
     case EndMarker:
         return "EndMarker";
+    case EndAnchor:
+        return "EndAnchor";
     case LazyMark:
         return "LazyMark";
     case LazyPlus:

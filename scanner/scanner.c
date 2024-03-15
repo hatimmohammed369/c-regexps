@@ -87,6 +87,18 @@ Token get_next_token(Scanner* s) {
 
     char next = next_char(s);
     switch (peek) {
+        case '^':
+            if (s->current == 0) {
+                next_token.type = StartAnchor;
+            }
+            break;
+
+        case '$':
+            if (s->current == s->source_length - 1) {
+                next_token.type = EndAnchor;
+            }
+            break;
+
         case '(':
             next_token.type = LeftParen;
             break;
