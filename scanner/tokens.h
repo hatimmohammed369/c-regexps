@@ -12,8 +12,11 @@ typedef enum _TokenType TokenType;
 
 struct _Token {
     TokenType type;
+    // Actually characters this token points to
     char* lexeme;
+    // Number of characters this token points to
     size_t length;
+    // Position in source string
     size_t position;
 };
 
