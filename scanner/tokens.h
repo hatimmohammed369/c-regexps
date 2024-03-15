@@ -6,6 +6,9 @@
 enum _TokenType {
     Empty,
     EndMarker,
+    LazyMark, // ??
+    LazyPlus, // +?
+    LazyStar, // *?
     LeftParen, // (
     Mark, // ?
     Or, // |

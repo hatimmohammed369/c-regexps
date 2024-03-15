@@ -6,6 +6,12 @@ const char* token_type_name(TokenType t) {
         return "Empty";
     case EndMarker:
         return "EndMarker";
+    case LazyMark:
+        return "LazyMark";
+    case LazyPlus:
+        return "LazyPlus";
+    case LazyStar:
+        return "LazyStar";
     case LeftParen:
         return "LeftParen";
     case Mark:

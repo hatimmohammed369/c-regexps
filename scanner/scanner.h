@@ -22,8 +22,10 @@ typedef struct _Scanner Scanner;
 
 // Construct a new scanner from a string
 Scanner new_scanner(char* source, size_t length);
+
 // Consume character in source and generate a token
 Token get_next_token(Scanner* s);
+
 // Print token in this format:
 // Token { type = type_name, lexeme = "lexeme_value", length = N, position = I }
 void print_token(Token t);

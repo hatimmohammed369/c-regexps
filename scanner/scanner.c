@@ -31,6 +31,10 @@ static char peek_char(Scanner* s) {
     return !has_next(s) ? '\0' : s->source[s->current];
 }
 
+static char next_char(Scanner* s) {
+    return s->current + 1 >= s->source_length ? '\0' : s->source[s->current + 1];
+}
+
 Token get_next_token(Scanner* s) {
     bool is_previous_char_escaped = false;
     if (s->current >= 2) {
@@ -81,7 +85,7 @@ Token get_next_token(Scanner* s) {
     next_token.lexeme[0] = peek;
     next_token.lexeme[1] = '\0';
 
-    switch (peek_char(s)) {
+    switch (peek) {
         case '(':
             next_token.type = LeftParen;
             break;
@@ -95,15 +99,39 @@ Token get_next_token(Scanner* s) {
             break;
 
         case '?':
-            next_token.type = Mark;
+            char next = next_char(s);
+            if (next == '?') {
+                s->current++;
+                next_token.type = LazyMark;
+                next_token.lexeme = "??";
+                next_token.length = 2;
+            } else {
+                next_token.type = Mark;
+            }
             break;
 
         case '*':
-            next_token.type = Star;
+            next = next_char(s);
+            if (next == '?') {
+                s->current++;
+                next_token.type = LazyStar;
+                next_token.lexeme = "*?";
+                next_token.length = 2;
+            } else {
+                next_token.type = Star;
+            }
             break;
 
         case '+':
-            next_token.type = Plus;
+            next = next_char(s);
+            if (next == '?') {
+                s->current++;
+                next_token.type = LazyPlus;
+                next_token.lexeme = "+?";
+                next_token.length = 2;
+            } else {
+                next_token.type = Plus;
+            }
             break;
     }
 
