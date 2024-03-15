@@ -4,28 +4,40 @@
 #include "../common.h"
 
 enum _TokenType {
-    Digit, // \d
-    Empty,
+    // Anchors
     EndAnchor, // $
-    EndMarker,
-    LazyMark, // ??
-    LazyPlus, // +?
-    LazyStar, // *?
-    LeftParen, // (
-    Mark, // ?
+    StartAnchor, // ^
+
+    // Slash classes
+    Digit, // \d
     NonDigit, // \D
     NonWhitespace, // \S
     NonWordBoundary,
-    Or, // |
+    Whitespace, // \s
+    WordBoundary, // \w
+
+    // Special
+    Empty,
+    EndMarker,
+
+    // Lazy Quantifiers
+    LazyMark, // ??
+    LazyPlus, // +?
+    LazyStar, // *?
+
+    // Basic Quantifiers
+    Mark, // ?
+    Star, // *
     Plus, // +
+
+    // Possessive Quantifiers
     PossessiveMark, // ?+
     PossessivePlus, // ++
     PossessiveStar, // *+
+
+    LeftParen, // (
     RightParen, // )
-    Star, // *
-    StartAnchor, // ^
-    Whitespace, // \s
-    WordBoundary, // \w
+    Or, // |
 };
 
 typedef enum _TokenType TokenType;

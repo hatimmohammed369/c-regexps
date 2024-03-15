@@ -2,50 +2,62 @@
 
 const char* token_type_name(TokenType t) {
     switch (t) {
-    case Digit:
-        return "Digit";
-    case Empty:
-        return "Empty";
-    case EndAnchor:
-        return "EndAnchor";
-    case EndMarker:
-        return "EndMarker";
-    case LazyMark:
-        return "LazyMark";
-    case LazyPlus:
-        return "LazyPlus";
-    case LazyStar:
-        return "LazyStar";
-    case LeftParen:
-        return "LeftParen";
-    case Mark:
-        return "Mark";
-    case NonDigit:
-        return "NonDigit";
-    case NonWhitespace:
-        return "NonWhitespace";
-    case NonWordBoundary:
-        return "NonWordBoundary";
-    case Or:
-        return "Or";
-    case Plus:
-        return "Plus";
-    case PossessiveMark:
-        return "PossessiveMark";
-    case PossessivePlus:
-        return "PossessivePlus";
-    case PossessiveStar:
-        return "PossessiveStar";
-    case RightParen:
-        return "RightParen";
-    case Star:
-        return "Star";
-    case StartAnchor:
-        return "StartAnchor";
-    case Whitespace:
-        return "Whitespace";
-    case WordBoundary:
-        return "WordBoundary";
+        // Anchors
+        case EndAnchor:
+            return "EndAnchor";
+        case StartAnchor:
+            return "StartAnchor";
+
+        // Slash classes
+        case Digit:
+            return "Digit";
+        case NonDigit:
+            return "NonDigit";
+        case NonWhitespace:
+            return "NonWhitespace";
+        case NonWordBoundary:
+            return "NonWordBoundary";
+        case Whitespace:
+            return "Whitespace";
+        case WordBoundary:
+            return "WordBoundary";
+
+        // Special
+        case Empty:
+            return "Empty";
+        case EndMarker:
+            return "EndMarker";
+
+        // Lazy Quantifiers
+        case LazyMark:
+            return "LazyMark";
+        case LazyPlus:
+            return "LazyPlus";
+        case LazyStar:
+            return "LazyStar";
+
+        // Basic Quantifiers
+        case Mark:
+            return "Mark";
+        case Star:
+            return "Star";
+        case Plus:
+            return "Plus";
+
+        // Possessive Quantifiers
+        case PossessiveMark:
+            return "PossessiveMark";
+        case PossessivePlus:
+            return "PossessivePlus";
+        case PossessiveStar:
+            return "PossessiveStar";
+
+        case LeftParen:
+            return "LeftParen";
+        case RightParen:
+            return "RightParen";
+        case Or:
+            return "Or";
     }
     return "UNKNOWN";
 }
