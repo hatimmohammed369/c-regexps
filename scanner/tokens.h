@@ -28,4 +28,8 @@ struct _Token {
 
 typedef struct _Token Token;
 
+const char* token_type_name(TokenType t);
+
+void print_token(Token t);
+
 #endif

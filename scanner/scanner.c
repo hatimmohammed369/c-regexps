@@ -11,34 +11,6 @@ Scanner new_scanner(char* source, size_t length) {
     };
 }
 
-static const char* token_type_name(TokenType t) {
-    switch (t) {
-    case Empty:
-        return "Empty";
-    case EndMarker:
-        return "EndMarker";
-    case LeftParen:
-        return "LeftParen";
-    case Mark:
-        return "Mark";
-    case Or:
-        return "Or";
-    case Plus:
-        return "Plus";
-    case RightParen:
-        return "RightParen";
-    case Star:
-        return "Star";
-    }
-    return "Unknown";
-}
-
-void print_token(Token t) {
-    printf("Token { type = %s, lexeme = %s, length = %u, position = %u }",
-           token_type_name(t.type), t.lexeme, t.length, t.position);
-    printf("\n");
-}
-
 static Token make_end_marker(size_t source_length) {
     return (Token){.type = EndMarker, .lexeme="", .length=0, .position=source_length};
 }
