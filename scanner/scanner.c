@@ -19,10 +19,16 @@ static const char* token_type_name(TokenType t) {
         return "EndMarker";
     case LeftParen:
         return "LeftParen";
+    case Mark:
+        return "Mark";
     case Or:
         return "Or";
+    case Plus:
+        return "Plus";
     case RightParen:
         return "RightParen";
+    case Star:
+        return "Star";
     }
     return "Unknown";
 }
@@ -114,6 +120,18 @@ Token get_next_token(Scanner* s) {
 
         case '|':
             next_token.type = Or;
+            break;
+
+        case '?':
+            next_token.type = Mark;
+            break;
+
+        case '*':
+            next_token.type = Star;
+            break;
+
+        case '+':
+            next_token.type = Plus;
             break;
     }
 
