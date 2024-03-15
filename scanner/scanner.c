@@ -96,36 +96,44 @@ Token get_next_token(Scanner* s) {
             break;
 
         case '\\':
+            s->current++;
+            next_token.length = 2;
             if (next == 'd') {
-                s->current++;
                 next_token.type = DigitClass;
                 next_token.lexeme = "\\d";
-                next_token.length = 2;
             } else if (next == 'D') {
-                s->current++;
                 next_token.type = NonDigitClass;
                 next_token.lexeme = "\\D";
-                next_token.length = 2;
             } else if (next == 'w') {
-                s->current++;
                 next_token.type = WordBoundaryClass;
                 next_token.lexeme = "\\w";
-                next_token.length = 2;
             } else if (next == 'W') {
-                s->current++;
                 next_token.type = NonWordBoundaryClass;
                 next_token.lexeme = "\\W";
-                next_token.length = 2;
             } else if (next == 's') {
-                s->current++;
                 next_token.type = WhitespaceClass;
                 next_token.lexeme = "\\s";
-                next_token.length = 2;
             } else if (next == 'S') {
-                s->current++;
                 next_token.type = NonWhitespaceClass;
                 next_token.lexeme = "\\S";
-                next_token.length = 2;
+            } else if (!has_next(s)) {
+                fprintf(
+                    stderr,
+                    "Trailing \\\n"
+                    "\\ must be followed by something\n"
+                    "Use \"\\\\\\\\\" in your pattern to match a literal \\\n"
+                );
+                exit(1);
+            } else {
+                fprintf(
+                    stderr,
+                    "Bad escape \\%c at position %u\n"\
+                    "Use \"\\\\%c\" in your pattern\n",
+                    s->source[s->current],
+                    s->current == 0 ? 0 : s->current-1,
+                    s->source[s->current]
+                );
+                exit(1);
             }
             break;
 
