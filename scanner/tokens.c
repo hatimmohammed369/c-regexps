@@ -27,6 +27,8 @@ const char* token_type_name(TokenType t) {
             return "Empty";
         case EndMarker:
             return "EndMarker";
+        case Literal:
+            return "Literal";
 
         // Lazy Quantifiers
         case LazyMark:

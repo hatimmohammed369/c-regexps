@@ -1,5 +1,13 @@
 #include "./scanner.h"
 
+#define METACHARACTERS_COUNT 9
+static const char METACHARACTERS[METACHARACTERS_COUNT] = {'(', ')', '*', '+', '?', '\\', '^', '|', '$'};
+static bool is_metacharacter(char c) {
+    for (size_t i = 0;i < METACHARACTERS_COUNT;i++)
+        if (METACHARACTERS[i] == c) return true;
+    return false;
+}
+
 Scanner new_scanner(char* source, size_t length) {
     char* source_copy = malloc(length);
     memcpy(source_copy, source, length);
@@ -95,48 +103,6 @@ Token get_next_token(Scanner* s) {
             next_token.type = EndAnchor;
             break;
 
-        case '\\':
-            s->current++;
-            next_token.length = 2;
-            if (next == 'd') {
-                next_token.type = DigitClass;
-                next_token.lexeme = "\\d";
-            } else if (next == 'D') {
-                next_token.type = NonDigitClass;
-                next_token.lexeme = "\\D";
-            } else if (next == 'w') {
-                next_token.type = WordBoundaryClass;
-                next_token.lexeme = "\\w";
-            } else if (next == 'W') {
-                next_token.type = NonWordBoundaryClass;
-                next_token.lexeme = "\\W";
-            } else if (next == 's') {
-                next_token.type = WhitespaceClass;
-                next_token.lexeme = "\\s";
-            } else if (next == 'S') {
-                next_token.type = NonWhitespaceClass;
-                next_token.lexeme = "\\S";
-            } else if (!has_next(s)) {
-                fprintf(
-                    stderr,
-                    "Trailing \\\n"
-                    "\\ must be followed by something\n"
-                    "Use \"\\\\\\\\\" in your pattern to match a literal \\\n"
-                );
-                exit(1);
-            } else {
-                fprintf(
-                    stderr,
-                    "Bad escape \\%c at position %u\n"\
-                    "Use \"\\\\%c\" in your pattern\n",
-                    s->source[s->current],
-                    s->current == 0 ? 0 : s->current-1,
-                    s->source[s->current]
-                );
-                exit(1);
-            }
-            break;
-
         case '(':
             next_token.type = LeftParen;
             break;
@@ -196,6 +162,62 @@ Token get_next_token(Scanner* s) {
                 next_token.type = Plus;
             }
             break;
+
+        case '\\':
+            s->current++;
+            next_token.length = 2;
+            if (next == 'd') {
+                next_token.type = DigitClass;
+                next_token.lexeme = "\\d";
+            } else if (next == 'D') {
+                next_token.type = NonDigitClass;
+                next_token.lexeme = "\\D";
+            } else if (next == 'w') {
+                next_token.type = WordBoundaryClass;
+                next_token.lexeme = "\\w";
+            } else if (next == 'W') {
+                next_token.type = NonWordBoundaryClass;
+                next_token.lexeme = "\\W";
+            } else if (next == 's') {
+                next_token.type = WhitespaceClass;
+                next_token.lexeme = "\\s";
+            } else if (next == 'S') {
+                next_token.type = NonWhitespaceClass;
+                next_token.lexeme = "\\S";
+            } else if (!has_next(s)) {
+                fprintf(
+                    stderr,
+                    "Trailing \\\n"
+                    "\\ must be followed by something\n"
+                    "Use \"\\\\\\\\\" in your pattern to match a literal \\\n"
+                );
+                exit(1);
+            } else {
+                fprintf(
+                    stderr,
+                    "Bad escape \\%c at position %u\n"\
+                    "Use \"\\\\%c\" in your pattern\n",
+                    s->source[s->current],
+                    s->current == 0 ? 0 : s->current-1,
+                    s->source[s->current]
+                );
+                exit(1);
+            }
+
+        default:
+            size_t literal_length = 0;
+            size_t old_position = s->current;
+            while (!is_metacharacter(peek)) {
+                s->current++;
+                literal_length++;
+                peek = peek_char(s);
+            }
+            next_token.type = Literal;
+            next_token.lexeme = malloc(literal_length);
+            memcpy(next_token.lexeme, s->source+old_position, literal_length);
+            next_token.length = literal_length;
+            next_token.position = old_position;
+            return next_token;
     }
 
     s->current++;

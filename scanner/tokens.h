@@ -19,6 +19,7 @@ enum _TokenType {
     // Special
     Empty,
     EndMarker,
+    Literal,
 
     // Lazy Quantifiers
     LazyMark, // ??
