@@ -1,7 +1,7 @@
 #include "./scanner.h"
 
-#define METACHARACTERS_COUNT 9
-static const char METACHARACTERS[METACHARACTERS_COUNT] = {'(', ')', '*', '+', '?', '\\', '^', '|', '$'};
+#define METACHARACTERS_COUNT 11
+static const char METACHARACTERS[METACHARACTERS_COUNT] = {'(', ')', '*', '+', '.', '?', '\\', '^', '|', '$'};
 static bool is_metacharacter(char c) {
     for (size_t i = 0;i < METACHARACTERS_COUNT;i++)
         if (METACHARACTERS[i] == c) return true;
@@ -161,6 +161,10 @@ Token get_next_token(Scanner* s) {
             } else {
                 next_token.type = Plus;
             }
+            break;
+
+        case '.':
+            next_token.type = Dot;
             break;
 
         case '\\':
