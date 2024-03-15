@@ -98,32 +98,32 @@ Token get_next_token(Scanner* s) {
         case '\\':
             if (next == 'd') {
                 s->current++;
-                next_token.type = Digit;
+                next_token.type = DigitClass;
                 next_token.lexeme = "\\d";
                 next_token.length = 2;
             } else if (next == 'D') {
                 s->current++;
-                next_token.type = NonDigit;
+                next_token.type = NonDigitClass;
                 next_token.lexeme = "\\D";
                 next_token.length = 2;
             } else if (next == 'w') {
                 s->current++;
-                next_token.type = WordBoundary;
+                next_token.type = WordBoundaryClass;
                 next_token.lexeme = "\\w";
                 next_token.length = 2;
             } else if (next == 'W') {
                 s->current++;
-                next_token.type = NonWordBoundary;
+                next_token.type = NonWordBoundaryClass;
                 next_token.lexeme = "\\W";
                 next_token.length = 2;
             } else if (next == 's') {
                 s->current++;
-                next_token.type = Whitespace;
+                next_token.type = WhitespaceClass;
                 next_token.lexeme = "\\s";
                 next_token.length = 2;
             } else if (next == 'S') {
                 s->current++;
-                next_token.type = NonWhitespace;
+                next_token.type = NonWhitespaceClass;
                 next_token.lexeme = "\\S";
                 next_token.length = 2;
             }

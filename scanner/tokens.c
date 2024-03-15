@@ -9,18 +9,18 @@ const char* token_type_name(TokenType t) {
             return "StartAnchor";
 
         // Slash classes
-        case Digit:
-            return "Digit";
-        case NonDigit:
-            return "NonDigit";
-        case NonWhitespace:
-            return "NonWhitespace";
-        case NonWordBoundary:
-            return "NonWordBoundary";
-        case Whitespace:
-            return "Whitespace";
-        case WordBoundary:
-            return "WordBoundary";
+        case DigitClass:
+            return "DigitClass";
+        case NonDigitClass:
+            return "NonDigitClass";
+        case NonWhitespaceClass:
+            return "NonWhitespaceClass";
+        case NonWordBoundaryClass:
+            return "NonWordBoundaryClass";
+        case WhitespaceClass:
+            return "WhitespaceClass";
+        case WordBoundaryClass:
+            return "WordBoundaryClass";
 
         // Special
         case Empty:

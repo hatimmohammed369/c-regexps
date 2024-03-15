@@ -9,12 +9,12 @@ enum _TokenType {
     StartAnchor, // ^
 
     // Slash classes
-    Digit, // \d
-    NonDigit, // \D
-    NonWhitespace, // \S
-    NonWordBoundary,
-    Whitespace, // \s
-    WordBoundary, // \w
+    DigitClass, // \d
+    NonDigitClass, // \D
+    NonWhitespaceClass, // \S
+    NonWordBoundaryClass,
+    WhitespaceClass, // \s
+    WordBoundaryClass, // \w
 
     // Special
     Empty,
