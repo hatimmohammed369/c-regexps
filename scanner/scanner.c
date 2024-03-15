@@ -17,6 +17,10 @@ static const char* token_type_name(TokenType t) {
         return "Empty";
     case EndMarker:
         return "EndMarker";
+    case LeftParen:
+        return "LeftParen";
+    case RightParen:
+        return "RightParen";
     }
 }
 
@@ -81,6 +85,32 @@ Token get_next_token(Scanner* s) {
 
     // Attempt to generated empty string token in next iteration
     s->found_empty_string = false;
-    s->current += 1;
-    return make_end_marker(s->source_length);
+
+    if (!has_next(s)) {
+        return make_end_marker(s->source_length);
+    }
+
+    Token next_token = (Token) {
+        .type = EndMarker,
+        .lexeme = "",
+        .length = 0,
+        .position = s->current,
+    };
+
+    switch (peek_char(s)) {
+        case '(':
+            next_token.type = LeftParen;
+            next_token.lexeme = "(";
+            next_token.length = 1;
+            break;
+        case ')':
+            next_token.type = RightParen;
+            next_token.lexeme = ")";
+            next_token.length = 1;
+            break;
+    }
+
+    s->current++;
+
+    return next_token;
 }

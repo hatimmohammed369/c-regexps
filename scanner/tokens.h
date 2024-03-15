@@ -6,6 +6,8 @@
 enum _TokenType {
     Empty,
     EndMarker,
+    LeftParen,
+    RightParen,
 };
 
 typedef enum _TokenType TokenType;
