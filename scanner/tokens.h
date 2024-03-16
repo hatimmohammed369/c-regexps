@@ -23,6 +23,7 @@ enum _TokenType {
     EndMarker,
     Literal,
     Dot,
+    Comma,
 
     // Lazy Quantifiers
     LazyMark, // ??
@@ -39,6 +40,8 @@ enum _TokenType {
     PossessivePlus, // ++
     PossessiveStar, // *+
 
+    LeftBrace, // {
+    RightBrace, // }
     LeftParen, // (
     RightParen, // )
     Or, // |

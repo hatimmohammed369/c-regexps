@@ -1,7 +1,7 @@
 #include "./scanner.h"
 
-#define METACHARACTERS_COUNT 9
-static const char METACHARACTERS[METACHARACTERS_COUNT] = {'(', ')', '*', '+', '.', '?', '\\', '|'};
+#define METACHARACTERS_COUNT 11
+static const char METACHARACTERS[METACHARACTERS_COUNT] = {'(', ')', '{', '}', '*', '+', '.', '?', '\\', '|'};
 
 static bool is_metacharacter(char c) {
     for (size_t i = 0;i < METACHARACTERS_COUNT;i++)
@@ -29,10 +29,11 @@ Scanner new_scanner(char* source, size_t length) {
     char* source_copy = malloc(length);
     memcpy(source_copy, source, length);
     return (Scanner) {
-      .source = source_copy,
-      .source_length = length,
-      .current = 0,
-      .found_empty_string = false,
+        .source = source_copy,
+        .source_length = length,
+        .current = 0,
+        .found_empty_string = false,
+        .inside_braces = false,
     };
 }
 
@@ -116,6 +117,16 @@ Token get_next_token(Scanner* s) {
 
     char next = get_next_char(s);
     switch (peek) {
+        case '{':
+            s->inside_braces = true;
+            next_token.type = LeftBrace;
+            break;
+
+        case '}':
+            s->inside_braces = false;
+            next_token.type = RightBrace;
+            break;
+
         case '(':
             next_token.type = LeftParen;
             break;
@@ -236,6 +247,12 @@ Token get_next_token(Scanner* s) {
             char c1 = next_token.lexeme[1];
             if (c0 != '\\' || !is_anchor_char(c1)) {
                 s->current -= 2;
+            }
+
+        case ',':
+            if (s->inside_braces) {
+                next_token.type = Comma;
+                break;
             }
 
         default:

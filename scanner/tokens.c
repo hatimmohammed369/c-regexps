@@ -35,6 +35,8 @@ const char* token_type_name(TokenType t) {
             return "Literal";
         case Dot:
             return "Dot";
+        case Comma:
+            return "Comma";
 
         // Lazy Quantifiers
         case LazyMark:
@@ -60,6 +62,10 @@ const char* token_type_name(TokenType t) {
         case PossessiveStar:
             return "PossessiveStar";
 
+        case LeftBrace:
+             return "LeftBrace";
+        case RightBrace:
+             return "RightBrace";
         case LeftParen:
             return "LeftParen";
         case RightParen:
