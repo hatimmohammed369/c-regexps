@@ -249,6 +249,30 @@ Token get_next_token(Scanner* s) {
                 s->current -= 2;
             }
 
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+            if (s->inside_braces) {
+                size_t digits = 0;
+                while ('0' <= peek && peek <= '9') {
+                    digits++;
+                    s->current++;
+                    peek = get_peek_char(s);
+                }
+                next_token.type = Integer;
+                next_token.lexeme = malloc(digits);
+                memcpy(next_token.lexeme, s->source+(s->current - digits), digits);
+                next_token.length = digits;
+                return next_token;
+            }
+
         case ',':
             if (s->inside_braces) {
                 next_token.type = Comma;
@@ -257,7 +281,6 @@ Token get_next_token(Scanner* s) {
 
         default:
             size_t chars_count = 0;
-            size_t old_position = s->current;
             if (!is_metacharacter(peek)) {
                 s->current++;
                 chars_count++;
@@ -325,6 +348,7 @@ Token get_next_token(Scanner* s) {
 
             next_token.type = Literal;
             next_token.lexeme = malloc(chars_count);
+            const size_t old_position = s->current - chars_count;
             size_t lexeme_length = 0;
             for (size_t i = 0, k = old_position;k < s->current;k++,i++) {
                 if (is_metacharacter(s->source[k])) {

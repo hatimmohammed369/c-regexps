@@ -37,6 +37,8 @@ const char* token_type_name(TokenType t) {
             return "Dot";
         case Comma:
             return "Comma";
+        case Integer:
+            return "Integer";
 
         // Lazy Quantifiers
         case LazyMark:

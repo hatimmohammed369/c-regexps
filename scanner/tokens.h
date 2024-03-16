@@ -24,6 +24,7 @@ enum _TokenType {
     Literal,
     Dot,
     Comma,
+    Integer,
 
     // Lazy Quantifiers
     LazyMark, // ??
