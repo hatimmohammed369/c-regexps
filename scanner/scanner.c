@@ -170,17 +170,23 @@ Token get_next_token(Scanner* s) {
         case '\\':
             s->current++;
             next_token.length = 2;
-            if (next == 'd') {
+            if (next == 'b') {
+                next_token.type = WordBoundaryAnchor;
+                next_token.lexeme = "\\b";
+            } else if (next == 'B') {
+                next_token.type = NonWordBoundaryAnchor;
+                next_token.lexeme = "\\B";
+            } else if (next == 'd') {
                 next_token.type = DigitClass;
                 next_token.lexeme = "\\d";
             } else if (next == 'D') {
                 next_token.type = NonDigitClass;
                 next_token.lexeme = "\\D";
             } else if (next == 'w') {
-                next_token.type = WordBoundaryClass;
+                next_token.type = WordCharacterClass;
                 next_token.lexeme = "\\w";
             } else if (next == 'W') {
-                next_token.type = NonWordBoundaryClass;
+                next_token.type = NonWordCharacterClass;
                 next_token.lexeme = "\\W";
             } else if (next == 's') {
                 next_token.type = WhitespaceClass;
@@ -200,10 +206,9 @@ Token get_next_token(Scanner* s) {
                 fprintf(
                     stderr,
                     "Bad escape \\%c at position %u\n"\
-                    "Use \"\\\\%c\" in your pattern\n",
+                    "Use \"\\\\\\\\%1$c\" in your pattern to match a \\ followed by %1$c\n",
                     s->source[s->current],
                     s->current == 0 ? 0 : s->current-1,
-                    s->source[s->current]
                 );
                 exit(1);
             }

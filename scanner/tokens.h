@@ -7,14 +7,16 @@ enum _TokenType {
     // Anchors
     EndAnchor, // $
     StartAnchor, // ^
+    WordBoundaryAnchor, // \b
+    NonWordBoundaryAnchor, // \B
 
     // Slash classes
     DigitClass, // \d
     NonDigitClass, // \D
-    NonWhitespaceClass, // \S
-    NonWordBoundaryClass,
     WhitespaceClass, // \s
-    WordBoundaryClass, // \w
+    NonWhitespaceClass, // \S
+    WordCharacterClass, // \w
+    NonWordCharacterClass, // \W
 
     // Special
     Empty,

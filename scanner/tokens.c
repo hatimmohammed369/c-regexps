@@ -7,20 +7,24 @@ const char* token_type_name(TokenType t) {
             return "EndAnchor";
         case StartAnchor:
             return "StartAnchor";
+        case WordBoundaryAnchor:
+            return "WordBoundaryAnchor";
+        case NonWordBoundaryAnchor:
+            return "NonWordBoundaryAnchor";
 
         // Slash classes
         case DigitClass:
             return "DigitClass";
         case NonDigitClass:
             return "NonDigitClass";
-        case NonWhitespaceClass:
-            return "NonWhitespaceClass";
-        case NonWordBoundaryClass:
-            return "NonWordBoundaryClass";
         case WhitespaceClass:
             return "WhitespaceClass";
-        case WordBoundaryClass:
-            return "WordBoundaryClass";
+        case NonWhitespaceClass:
+            return "NonWhitespaceClass";
+        case WordCharacterClass:
+            return "WordCharacterClass";
+        case NonWordCharacterClass:
+            return "NonWordCharacterClass";
 
         // Special
         case Empty:
