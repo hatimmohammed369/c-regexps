@@ -1,7 +1,9 @@
 #include "./scanner.h"
 
-#define METACHARACTERS_COUNT 11
-static const char METACHARACTERS[METACHARACTERS_COUNT] = {'(', ')', '{', '}', '*', '+', '.', '?', '\\', '|'};
+#define METACHARACTERS_COUNT 13
+static const char METACHARACTERS[METACHARACTERS_COUNT] = {
+    '(', ')', '{', '}', '[' , ']', '*', '+', '.', '?', '\\', '|'
+};
 
 static bool is_metacharacter(char c) {
     for (size_t i = 0;i < METACHARACTERS_COUNT;i++)
@@ -34,6 +36,7 @@ Scanner new_scanner(char* source, size_t length) {
         .current = 0,
         .found_empty_string = false,
         .inside_braces = false,
+        .inside_brackets = false,
     };
 }
 
@@ -117,6 +120,16 @@ Token get_next_token(Scanner* s) {
 
     char next = get_next_char(s);
     switch (peek) {
+        case '[':
+            s->inside_brackets = true;
+            next_token.type = LeftBracket;
+            break;
+
+        case ']':
+            s->inside_brackets = false;
+            next_token.type = RightBracket;
+            break;
+
         case '{':
             s->inside_braces = true;
             next_token.type = LeftBrace;

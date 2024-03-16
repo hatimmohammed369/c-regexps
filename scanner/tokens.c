@@ -64,6 +64,10 @@ const char* token_type_name(TokenType t) {
         case PossessiveStar:
             return "PossessiveStar";
 
+        case LeftBracket:
+             return "LeftBracket";
+        case RightBracket:
+             return "RightBracket";
         case LeftBrace:
              return "LeftBrace";
         case RightBrace:

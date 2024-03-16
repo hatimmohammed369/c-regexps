@@ -17,6 +17,7 @@ struct _Scanner {
     // otherwise the scanner will loop endlessly generating empty string token at the position
     bool found_empty_string;
     bool inside_braces;
+    bool inside_brackets;
 };
 
 typedef struct _Scanner Scanner;

@@ -41,6 +41,8 @@ enum _TokenType {
     PossessivePlus, // ++
     PossessiveStar, // *+
 
+    LeftBracket, // [
+    RightBracket, // ]
     LeftBrace, // {
     RightBrace, // }
     LeftParen, // (
