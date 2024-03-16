@@ -5,8 +5,8 @@
 
 enum _TokenType {
     // Anchors
-    EndAnchor, // $
-    StartAnchor, // ^
+    EndAnchor, // \Z
+    StartAnchor, // \A
     WordBoundaryAnchor, // \b
     NonWordBoundaryAnchor, // \B
 
