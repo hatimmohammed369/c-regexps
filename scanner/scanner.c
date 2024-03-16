@@ -48,19 +48,19 @@ static bool has_next(Scanner* s) {
     return s->current < s->source_length;
 }
 
-static char get_previous_char(Scanner* s) {
-    return s->current == 0 ? '\0' : s->source[s->current - 1];
-}
-
 static char get_char(Scanner* s, size_t position) {
     return position < s->source_length ? s->source[position] : '\0';
+}
+
+static char get_previous_char(Scanner* s) {
+    return s->current == 0 ? '\0' : s->source[s->current - 1];
 }
 
 static char get_peek_char(Scanner* s) {
     return get_char(s, s->current);
 }
 
-static char next_char(Scanner* s) {
+static char get_next_char(Scanner* s) {
     return get_char(s, s->current+1);
 }
 
@@ -114,7 +114,7 @@ Token get_next_token(Scanner* s) {
     next_token.lexeme[0] = peek;
     next_token.lexeme[1] = '\0';
 
-    char next = next_char(s);
+    char next = get_next_char(s);
     switch (peek) {
         case '(':
             next_token.type = LeftParen;
@@ -184,19 +184,8 @@ Token get_next_token(Scanner* s) {
             s->current += 2;
             next_token.length = 2;
             if (next == 'A') {
-                char previous = get_previous_char(s);
-                if (s->current == 2 || previous == '(' || previous == '|') {
-                    next_token.type = StartAnchor;
-                    next_token.lexeme = "\\A";
-                } else {
-                    fprintf(
-                        stderr,
-                        "Bad escape \\A at position %u\n"\
-                        "\\A must be used at start of regular expression",
-                        s->current == 0 ? 0 : s->current-1
-                    );
-                    exit(1);
-                }
+                next_token.type = StartAnchor;
+                next_token.lexeme = "\\A";
             } else if (next == 'b') {
                 next_token.type = WordBoundaryAnchor;
                 next_token.lexeme = "\\b";
@@ -222,18 +211,8 @@ Token get_next_token(Scanner* s) {
                 next_token.type = NonWhitespaceClass;
                 next_token.lexeme = "\\S";
             } else if (next == 'Z') {
-                if (s->current >= s->source_length || next == ')' || next == '|') {
-                    next_token.type = EndAnchor;
-                    next_token.lexeme = "\\Z";
-                } else {
-                    fprintf(
-                        stderr,
-                        "Bad escape \\Z at position %u\n"\
-                        "\\Z must be used at end of regular expression",
-                        s->current == 0 ? 0 : s->current-1
-                    );
-                    exit(1);
-                }
+                next_token.type = EndAnchor;
+                next_token.lexeme = "\\Z";
             } else if (!has_next(s)) {
                 fprintf(
                     stderr,
