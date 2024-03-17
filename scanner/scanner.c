@@ -281,8 +281,10 @@ Token get_next_token(Scanner* s) {
 
             char c0 = next_token.lexeme[0];
             char c1 = next_token.lexeme[1];
-            if (c0 != '\\' || !is_anchor_char(c1)) {
+            if (c0 != '\\' || (!is_anchor_char(c1) && !is_slash_class_char(c1))) {
                 s->current -= 2;
+            } else {
+                return next_token;
             }
 
         case '0':
@@ -297,10 +299,9 @@ Token get_next_token(Scanner* s) {
         case '9':
             if (s->inside_braces) {
                 size_t digits = 0;
-                while ('0' <= peek && peek <= '9') {
+                while (isdigit(get_peek_char(s))) {
                     digits++;
                     s->current++;
-                    peek = get_peek_char(s);
                 }
                 next_token.type = Integer;
                 next_token.lexeme = malloc(digits);
