@@ -123,6 +123,21 @@ Token get_next_token(Scanner* s) {
     char next = get_next_char(s);
     switch (peek) {
         case '[':
+            if (s->inside_brackets) {
+                char* caret = malloc(s->source_length);
+                for (size_t i = 0;i < s->current;i++) caret[i] = ' ';
+                caret[s->current] = '^';
+                for (size_t i = s->current+1;i < s->source_length;i++) caret[i] = ' ';
+                fprintf(
+                    stderr,
+                    "Nested [ at position %u" "\n"
+                    "%s" "\n" "%s" "\n"
+                    "Use \\[ to match a literal [ inside a character class" "\n"
+                    "Use \\] to match a literal ] inside a character class" "\n",
+                    s->current, s->source, caret
+                );
+                exit(1);
+            }
             s->inside_brackets = true;
             next_token.type = LeftBracket;
             break;
