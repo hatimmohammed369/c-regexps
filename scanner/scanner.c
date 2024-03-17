@@ -20,14 +20,6 @@ static bool is_slash_class_char(char c) {
     return c == 'd' || c == 'D' || c == 's' || c == 'S' || c == 'w' || c == 'W';
 }
 
-static bool is_valid_escape_char(char c) {
-    return is_anchor_char(c) || is_slash_class_char(c) || is_metacharacter(c);
-}
-
-static bool is_basic_quantifier(char c) {
-    return c == '?' || c == '*' || c == '+';
-}
-
 Scanner new_scanner(char* source, size_t length) {
     char* source_copy = malloc(length);
     memcpy(source_copy, source, length);
@@ -379,68 +371,18 @@ Token get_next_token(Scanner* s) {
                 }
             } else {
                 size_t chars_count = 0;
-                if (!is_metacharacter(peek)) {
-                    s->current++;
-                    chars_count++;
-                } else if (peek == '\\' && is_metacharacter(next)) {
-                    s->current += 2;
-                    chars_count++;
-                }
-
+                // Consume any non-metacharacter or any escaped metacharacter
                 while (has_next(s)) {
-                    char next_chars[] = {
-                        get_char(s, s->current),
-                        get_char(s, s->current + 1),
-                        get_char(s, s->current + 2),
-                    };
-
-                    bool quantified_char = !is_metacharacter(next_chars[0])
-                        && is_basic_quantifier(next_chars[1]);
-                    bool quantified_slashed_item = next_chars[0] == '\\'
-                        && is_valid_escape_char(next_chars[1])
-                        && is_basic_quantifier(next_chars[2]);
-
-                    if (quantified_char || quantified_slashed_item) {
-                        break;
+                    char peek = get_peek_char(s);
+                    char next = get_next_char(s);
+                    if (!is_metacharacter(peek)) {
+                        s->current++;
+                        chars_count++;
+                    } else if (peek == '\\' && is_metacharacter(next)) {
+                        s->current += 2;
+                        chars_count += 2;
                     } else {
-                        peek = next_chars[0];
-                        next = next_chars[1];
-                        if (peek == '\\') {
-                            if (!has_next(s)) {
-                                // Trailing slash
-                                fprintf(
-                                    stderr,
-                                    "Trailing \\\n"
-                                    "\\ must be followed by something\n"
-                                    "Use \"\\\\\\\\\" in your pattern to match a literal \\\n"
-                                );
-                                exit(1);
-                            } else if (!is_valid_escape_char(next)) {
-                                // Invalid escape, something like \H
-                                fprintf(
-                                    stderr,
-                                    "Bad escape \\%c at position %lu\n"\
-                                    "Use \"\\\\\\\\%1$c\" in your pattern to match a \\ followed by %1$c\n",
-                                    s->source[s->current],
-                                    s->current == 0 ? 0 : s->current-1
-                                );
-                                exit(1);
-                            } else if (is_metacharacter(next)) {
-                                // Escaped metacharacter, something \+
-                                s->current += 2;
-                                chars_count += 1;
-                            } else {
-                                // Any other valid escape sequence like \A or \d
-                                break;
-                            }
-                        } else if (!is_metacharacter(peek)) {
-                            // An ordinary character like `z`
-                            s->current++;
-                            chars_count++;
-                        } else {
-                            // Any other metacharacter
-                            break;
-                        }
+                        break;
                     }
                 }
 
