@@ -145,6 +145,19 @@ Token get_next_token(Scanner* s) {
                     s->current, s->source, caret
                 );
                 exit(1);
+            } else if (next == '^' && get_char(s, s->current+2) == ']') {
+                char* caret = malloc(s->source_length);
+                for (size_t i = 0;i < s->current+1;i++) caret[i] = ' ';
+                caret[s->current+1] = '^';
+                for (size_t i = s->current+2;i < s->source_length;i++) caret[i] = ' ';
+                fprintf(
+                    stderr,
+                    "Using ^ alone inside a character class at position %lu" "\n"
+                    "%s" "\n" "%s" "\n"
+                    "Write [\\^] to use ^ inside a character class" "\n",
+                    s->current+1, s->source, caret
+                );
+                exit(1);
             }
             s->inside_brackets = true;
             next_token.type = LeftBracket;
