@@ -28,6 +28,7 @@ Scanner new_scanner(char* source, size_t length) {
         .source_length = length,
         .current = 0,
         .found_empty_string = false,
+        .inside_parentheses = false,
         .inside_braces = false,
         .inside_brackets = false,
         .found_brackets_inverter = false,
@@ -150,6 +151,21 @@ Token get_next_token(Scanner* s) {
             break;
 
         case ']':
+            if (!s->inside_brackets) {
+                char* caret = malloc(s->source_length);
+                for (size_t i = 0;i < s->current;i++) caret[i] = ' ';
+                caret[s->current] = '^';
+                for (size_t i = s->current+1;i < s->source_length;i++) caret[i] = ' ';
+
+                fprintf(
+                    stderr,
+                    "Unmatched ] at position %lu" "\n"
+                    "%s" "\n" "%s" "\n"
+                    "Use \\] to match a literal ]" "\n",
+                    s->current, s->source, caret
+                );
+                exit(1);
+            }
             s->inside_brackets = false;
             s->found_brackets_inverter = false;
             next_token.type = RightBracket;
@@ -188,15 +204,47 @@ Token get_next_token(Scanner* s) {
             break;
 
         case '}':
+            if (!s->inside_braces) {
+                char* caret = malloc(s->source_length);
+                for (size_t i = 0;i < s->current;i++) caret[i] = ' ';
+                caret[s->current] = '^';
+                for (size_t i = s->current+1;i < s->source_length;i++) caret[i] = ' ';
+
+                fprintf(
+                    stderr,
+                    "Unmatched } at position %lu" "\n"
+                    "%s" "\n" "%s" "\n"
+                    "Use \\} to match a literal }" "\n",
+                    s->current, s->source, caret
+                );
+                exit(1);
+            }
             s->inside_braces = false;
             next_token.type = RightBrace;
             break;
 
         case '(':
+            s->inside_parentheses = true;
             next_token.type = LeftParen;
             break;
 
         case ')':
+            if (!s->inside_parentheses) {
+                char* caret = malloc(s->source_length);
+                for (size_t i = 0;i < s->current;i++) caret[i] = ' ';
+                caret[s->current] = '^';
+                for (size_t i = s->current+1;i < s->source_length;i++) caret[i] = ' ';
+
+                fprintf(
+                    stderr,
+                    "Unmatched ) at position %lu" "\n"
+                    "%s" "\n" "%s" "\n"
+                    "Use \\) to match a literal )" "\n",
+                    s->current, s->source, caret
+                );
+                exit(1);
+            }
+            s->inside_parentheses = false;
             next_token.type = RightParen;
             break;
 
