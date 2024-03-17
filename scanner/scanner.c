@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include "./scanner.h"
 
 #define METACHARACTERS_COUNT 13
@@ -37,6 +38,7 @@ Scanner new_scanner(char* source, size_t length) {
         .found_empty_string = false,
         .inside_braces = false,
         .inside_brackets = false,
+        .found_brackets_inverter = false,
     };
 }
 
@@ -127,6 +129,7 @@ Token get_next_token(Scanner* s) {
 
         case ']':
             s->inside_brackets = false;
+            s->found_brackets_inverter = false;
             next_token.type = RightBracket;
             break;
 
@@ -293,88 +296,143 @@ Token get_next_token(Scanner* s) {
             }
 
         default:
-            size_t chars_count = 0;
-            if (!is_metacharacter(peek)) {
-                s->current++;
-                chars_count++;
-            } else if (peek == '\\' && is_metacharacter(next)) {
-                s->current += 2;
-                chars_count++;
-            }
-
-            while (has_next(s)) {
-                char next_chars[] = {
-                    get_char(s, s->current),
-                    get_char(s, s->current + 1),
-                    get_char(s, s->current + 2),
-                };
-
-                bool quantified_char = !is_metacharacter(next_chars[0])
-                    && is_basic_quantifier(next_chars[1]);
-                bool quantified_slashed_item = next_chars[0] == '\\'
-                    && is_valid_escape_char(next_chars[1])
-                    && is_basic_quantifier(next_chars[2]);
-
-                if (quantified_char || quantified_slashed_item) {
-                    break;
+            if (s->inside_brackets) {
+                if (peek == '^' &&
+                    !s->found_brackets_inverter &&
+                    get_previous_char(s) == '['
+                ) {
+                    s->current++;
+                    s->found_brackets_inverter = true;
+                    next_token.type = CharacterClassInverter;
                 } else {
-                    peek = next_chars[0];
-                    next = next_chars[1];
-                    if (peek == '\\') {
-                        if (!has_next(s)) {
-                            // Trailing slash
-                            fprintf(
-                                stderr,
-                                "Trailing \\\n"
-                                "\\ must be followed by something\n"
-                                "Use \"\\\\\\\\\" in your pattern to match a literal \\\n"
-                            );
-                            exit(1);
-                        } else if (!is_valid_escape_char(next)) {
-                            // Invalid escape, something like \H
-                            fprintf(
-                                stderr,
-                                "Bad escape \\%c at position %u\n"\
-                                "Use \"\\\\\\\\%1$c\" in your pattern to match a \\ followed by %1$c\n",
-                                s->source[s->current],
-                                s->current == 0 ? 0 : s->current-1
-                            );
-                            exit(1);
-                        } else if (is_metacharacter(next)) {
-                            // Escaped metacharacter, something \+
-                            s->current += 2;
-                            chars_count += 1;
+                    char low = get_char(s, s->current);
+                    char separator = get_char(s, s->current + 1);
+                    char high = get_char(s, s->current + 2);
+
+                    next_token.type = Range;
+                    next_token.lexeme = malloc(2);
+                    next_token.lexeme[0] = low;
+
+                    if (
+                        separator == '-'
+                    ) {
+                        if (
+                            low <= high &&
+                            (
+                                isdigit(low) && isdigit(high) ||
+                                islower(low) && islower(high) ||
+                                isupper(low) && isupper(high)
+                            )
+                        ) {
+                            next_token.lexeme[1] = high;
+                            next_token.length = 3;
                         } else {
-                            // Any other valid escape sequence like \A or \d
+                            // Invalid range
+                            char* caret = malloc(s->source_length);
+                            for (size_t i = 0;i < s->current;i++) caret[i] = ' ';
+                            caret[s->current] = '^';
+                            caret[s->current + 1] = '^';
+                            caret[s->current + 2] = '^';
+                            for (size_t i = s->current+3;i < s->source_length;i++) caret[i] = ' ';
+                            
+                            fprintf(
+                                stderr,
+                                "Invalid range %c-%c at position %u" "\n"
+                                "%s" "\n" "%s" "\n",
+                                low, high, s->current, s->source, caret
+                            );
+                            exit(1);
+                        }
+                    } else {
+                        next_token.lexeme[1] = low;
+                        next_token.length = 1;
+                    }
+                    s->current += next_token.length;
+                }
+            } else {
+                size_t chars_count = 0;
+                if (!is_metacharacter(peek)) {
+                    s->current++;
+                    chars_count++;
+                } else if (peek == '\\' && is_metacharacter(next)) {
+                    s->current += 2;
+                    chars_count++;
+                }
+
+                while (has_next(s)) {
+                    char next_chars[] = {
+                        get_char(s, s->current),
+                        get_char(s, s->current + 1),
+                        get_char(s, s->current + 2),
+                    };
+
+                    bool quantified_char = !is_metacharacter(next_chars[0])
+                        && is_basic_quantifier(next_chars[1]);
+                    bool quantified_slashed_item = next_chars[0] == '\\'
+                        && is_valid_escape_char(next_chars[1])
+                        && is_basic_quantifier(next_chars[2]);
+
+                    if (quantified_char || quantified_slashed_item) {
+                        break;
+                    } else {
+                        peek = next_chars[0];
+                        next = next_chars[1];
+                        if (peek == '\\') {
+                            if (!has_next(s)) {
+                                // Trailing slash
+                                fprintf(
+                                    stderr,
+                                    "Trailing \\\n"
+                                    "\\ must be followed by something\n"
+                                    "Use \"\\\\\\\\\" in your pattern to match a literal \\\n"
+                                );
+                                exit(1);
+                            } else if (!is_valid_escape_char(next)) {
+                                // Invalid escape, something like \H
+                                fprintf(
+                                    stderr,
+                                    "Bad escape \\%c at position %u\n"\
+                                    "Use \"\\\\\\\\%1$c\" in your pattern to match a \\ followed by %1$c\n",
+                                    s->source[s->current],
+                                    s->current == 0 ? 0 : s->current-1
+                                );
+                                exit(1);
+                            } else if (is_metacharacter(next)) {
+                                // Escaped metacharacter, something \+
+                                s->current += 2;
+                                chars_count += 1;
+                            } else {
+                                // Any other valid escape sequence like \A or \d
+                                break;
+                            }
+                        } else if (!is_metacharacter(peek)) {
+                            // An ordinary character like `z`
+                            s->current++;
+                            chars_count++;
+                        } else {
+                            // Any other metacharacter
                             break;
                         }
-                    } else if (!is_metacharacter(peek)) {
-                        // An ordinary character like `z`
-                        s->current++;
-                        chars_count++;
-                    } else {
-                        // Any other metacharacter
-                        break;
                     }
                 }
-            }
 
-            next_token.type = Literal;
-            next_token.lexeme = malloc(chars_count);
-            const size_t old_position = s->current - chars_count;
-            size_t lexeme_length = 0;
-            for (size_t i = 0, k = old_position;k < s->current;k++,i++) {
-                if (is_metacharacter(s->source[k])) {
-                    lexeme_length += 2;
-                    k++;
-                    next_token.lexeme[i] = s->source[k];
-                } else {
-                    lexeme_length++;
-                    next_token.lexeme[i] = s->source[k];
+                next_token.type = Literal;
+                next_token.lexeme = malloc(chars_count);
+                const size_t old_position = s->current - chars_count;
+                size_t lexeme_length = 0;
+                for (size_t i = 0, k = old_position;k < s->current;k++,i++) {
+                    if (is_metacharacter(s->source[k])) {
+                        lexeme_length += 2;
+                        k++;
+                        next_token.lexeme[i] = s->source[k];
+                    } else {
+                        lexeme_length++;
+                        next_token.lexeme[i] = s->source[k];
+                    }
                 }
+                next_token.length = lexeme_length;
+                next_token.position = old_position;
             }
-            next_token.length = lexeme_length;
-            next_token.position = old_position;
             return next_token;
     }
 

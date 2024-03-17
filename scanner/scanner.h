@@ -18,6 +18,7 @@ struct _Scanner {
     bool found_empty_string;
     bool inside_braces;
     bool inside_brackets;
+    bool found_brackets_inverter;
 };
 
 typedef struct _Scanner Scanner;

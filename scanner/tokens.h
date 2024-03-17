@@ -25,6 +25,8 @@ enum _TokenType {
     Dot,
     Comma,
     Integer,
+    Range,
+    CharacterClassInverter, // ^
 
     // Lazy Quantifiers
     LazyMark, // ??
@@ -56,7 +58,8 @@ struct _Token {
     TokenType type;
     // Actually characters this token points to
     char* lexeme;
-    // Number of characters this token points to
+    // Number of characters this token points to in source string
+    // NOT number of characters in field 'lexeme'
     size_t length;
     // Position in source string
     size_t position;

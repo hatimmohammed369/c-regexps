@@ -39,6 +39,10 @@ const char* token_type_name(TokenType t) {
             return "Comma";
         case Integer:
             return "Integer";
+        case Range:
+            return "Range";
+        case CharacterClassInverter:
+            return "CharacterClassInverter";
 
         // Lazy Quantifiers
         case LazyMark:
