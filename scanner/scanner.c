@@ -149,6 +149,19 @@ Token get_next_token(Scanner* s) {
             break;
 
         case '{':
+            if (s->inside_braces) {
+                char* caret = malloc(s->source_length);
+                for (size_t i = 0;i < s->current;i++) caret[i] = ' ';
+                caret[s->current] = '^';
+                for (size_t i = s->current+1;i < s->source_length;i++) caret[i] = ' ';
+                fprintf(
+                    stderr,
+                    "Nested { at position %u" "\n"
+                    "%s" "\n" "%s" "\n",
+                    s->current, s->source, caret
+                );
+                exit(1);
+            }
             s->inside_braces = true;
             next_token.type = LeftBrace;
             break;
