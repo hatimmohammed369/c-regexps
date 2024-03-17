@@ -85,19 +85,19 @@ Token get_next_token(Scanner* s) {
         if (
             // The seven places a empty string token can be generated
             // An empty source string
-            s->source_length == 0 ||
+            (s->source_length == 0 ) ||
             // Before the leading | if source string begins with a |
-            s->current == 0 && previous == '\0' && peek == '|' ||
+            (s->current == 0 && previous == '\0' && peek == '|' ) ||
             // After the trailing | if source string ends with a |
-            s->current == s->source_length && previous == '|' && peek == '\0' ||
+            (s->current == s->source_length && previous == '|' && peek == '\0' ) ||
             // Between two consecutive |'s
-            previous == '|' && peek == '|' ||
+            (previous == '|' && peek == '|' ) ||
             // After a ( which is followed by a |
-            previous == '(' && peek == '|' ||
+            (previous == '(' && peek == '|' ) ||
             // After a | which is followed by )
-            previous == '|' && peek == ')' ||
+            (previous == '|' && peek == ')' ) ||
             // After a ( which is followed )
-            previous == '(' && peek == ')'
+            (previous == '(' && peek == ')')
         ) {
             return make_empty_token(s->current);
         }
@@ -130,7 +130,7 @@ Token get_next_token(Scanner* s) {
                 for (size_t i = s->current+1;i < s->source_length;i++) caret[i] = ' ';
                 fprintf(
                     stderr,
-                    "Nested [ at position %u" "\n"
+                    "Nested [ at position %lu" "\n"
                     "%s" "\n" "%s" "\n"
                     "Use \\[ to match a literal [ inside a character class" "\n"
                     "Use \\] to match a literal ] inside a character class" "\n",
@@ -156,7 +156,7 @@ Token get_next_token(Scanner* s) {
                 for (size_t i = s->current+1;i < s->source_length;i++) caret[i] = ' ';
                 fprintf(
                     stderr,
-                    "Nested { at position %u" "\n"
+                    "Nested { at position %lu" "\n"
                     "%s" "\n" "%s" "\n",
                     s->current, s->source, caret
                 );
@@ -279,7 +279,7 @@ Token get_next_token(Scanner* s) {
             } else if(!is_metacharacter(next)) {
                 fprintf(
                     stderr,
-                    "Bad escape \\%c at position %u" "\n"
+                    "Bad escape \\%c at position %lu" "\n"
                     "Use \"\\\\\\\\%1$c\" in your pattern to match a literal \\ followed by %1$c" "\n",
                     s->source[s->current],
                     s->current == 0 ? 0 : s->current-1
@@ -347,9 +347,9 @@ Token get_next_token(Scanner* s) {
                         if (
                             low <= high &&
                             (
-                                isdigit(low) && isdigit(high) ||
-                                islower(low) && islower(high) ||
-                                isupper(low) && isupper(high)
+                                (isdigit(low) && isdigit(high)) ||
+                                (islower(low) && islower(high)) ||
+                                (isupper(low) && isupper(high)) 
                             )
                         ) {
                             next_token.lexeme[1] = high;
@@ -365,7 +365,7 @@ Token get_next_token(Scanner* s) {
                             
                             fprintf(
                                 stderr,
-                                "Invalid range %c-%c at position %u" "\n"
+                                "Invalid range %c-%c at position %lu" "\n"
                                 "%s" "\n" "%s" "\n",
                                 low, high, s->current, s->source, caret
                             );
@@ -419,7 +419,7 @@ Token get_next_token(Scanner* s) {
                                 // Invalid escape, something like \H
                                 fprintf(
                                     stderr,
-                                    "Bad escape \\%c at position %u\n"\
+                                    "Bad escape \\%c at position %lu\n"\
                                     "Use \"\\\\\\\\%1$c\" in your pattern to match a \\ followed by %1$c\n",
                                     s->source[s->current],
                                     s->current == 0 ? 0 : s->current-1

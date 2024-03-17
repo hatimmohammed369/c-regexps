@@ -87,7 +87,7 @@ const char* token_type_name(TokenType t) {
 }
 
 void print_token(Token t) {
-    printf("Token { type = %s, lexeme = %s, length = %u, position = %u }",
+    printf("Token { type = %s, lexeme = %s, length = %lu, position = %lu }",
            token_type_name(t.type), t.lexeme, t.length, t.position);
     printf("\n");
 }

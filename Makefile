@@ -1,10 +1,15 @@
-run : compile
+CC = gcc
+CFLAGS = -Wall -Wextra -g -std=gnu11
+
+test : compile
 	@echo
 	@echo "Running . . . "
-	@./main.o
+	@./test
 
 compile :
 	@echo "Compiling . . . "
-	gcc -g -std=gnu11 -o main.o main.c lib.h \
-		scanner/tokens.h scanner/tokens.c \
-		scanner/scanner.h scanner/scanner.c
+	@echo
+	@echo "Source files:"
+	@find -type f -regex "^./.*[.]\(c\|h\)$$"
+	@echo
+	$(CC) $(CFLAGS) -o test `find -type f -regex "^./.*[.]\(c\|h\)$$"`
