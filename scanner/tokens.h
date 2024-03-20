@@ -27,6 +27,7 @@ enum _TokenType {
     Integer,
     Range,
     CharacterClassInverter, // ^
+    Backreference, // \Xxxx where `Xxxx` is positive integer and `X` is non-zero
 
     // Lazy Quantifiers
     LazyMark, // ??

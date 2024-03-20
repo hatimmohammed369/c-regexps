@@ -43,6 +43,8 @@ const char* token_type_name(TokenType t) {
             return "Range";
         case CharacterClassInverter:
             return "CharacterClassInverter";
+        case Backreference:
+            return "Backreference";
 
         // Lazy Quantifiers
         case LazyMark:

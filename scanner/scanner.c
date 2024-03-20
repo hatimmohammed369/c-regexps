@@ -69,7 +69,7 @@ Token get_next_token(Scanner* s) {
         is_previous_char_escaped = s->source[s->current - 2] == '\\';
     }
 
-    char peek = get_peek_char(s);
+    char peek_char = get_peek_char(s);
     if (
         !s->inside_brackets &&
         !is_previous_char_escaped &&
@@ -78,23 +78,23 @@ Token get_next_token(Scanner* s) {
         // We did the check
         // Do not attempt to generated empty string token in next iteration
         s->found_empty_string = true;
-        char previous = get_previous_char(s);
+        char previous_char = get_previous_char(s);
         if (
             // The seven places a empty string token can be generated
             // An empty source string
             (s->source_length == 0 ) ||
             // Before the leading | if source string begins with a |
-            (s->current == 0 && previous == '\0' && peek == '|' ) ||
+            (s->current == 0 && previous_char == '\0' && peek_char == '|' ) ||
             // After the trailing | if source string ends with a |
-            (s->current == s->source_length && previous == '|' && peek == '\0' ) ||
+            (s->current == s->source_length && previous_char == '|' && peek_char == '\0' ) ||
             // Between two consecutive |'s
-            (previous == '|' && peek == '|' ) ||
+            (previous_char == '|' && peek_char == '|' ) ||
             // After a ( which is followed by a |
-            (previous == '(' && peek == '|' ) ||
+            (previous_char == '(' && peek_char == '|' ) ||
             // After a | which is followed by )
-            (previous == '|' && peek == ')' ) ||
+            (previous_char == '|' && peek_char == ')' ) ||
             // After a ( which is followed )
-            (previous == '(' && peek == ')')
+            (previous_char == '(' && peek_char == ')')
         ) {
             return make_empty_token(s->current);
         }
@@ -114,14 +114,14 @@ Token get_next_token(Scanner* s) {
         .position = s->current,
     };
     next_token.lexeme = malloc(2);
-    next_token.lexeme[0] = peek;
+    next_token.lexeme[0] = peek_char;
     next_token.lexeme[1] = '\0';
 
-    peek = get_peek_char(s);
-    char next = get_next_char(s);
+    peek_char = get_peek_char(s);
+    char next_char = get_next_char(s);
 
-    if (s->inside_brackets && peek != ']') {
-        if (peek == '^' &&
+    if (s->inside_brackets && peek_char != ']') {
+        if (peek_char == '^' &&
             !s->found_brackets_inverter &&
             get_previous_char(s) == '['
         ) {
@@ -175,11 +175,11 @@ Token get_next_token(Scanner* s) {
         }
         return next_token;
     } else if (s->inside_braces) {
-        if (peek == ',') {
+        if (peek_char == ',') {
             next_token.type = Comma;
             s->current++;
             return next_token;
-        } else if (isdigit(peek)) {
+        } else if (isdigit(peek_char)) {
             size_t digits = 0;
             while (isdigit(get_peek_char(s))) {
                 digits++;
@@ -191,37 +191,48 @@ Token get_next_token(Scanner* s) {
             next_token.length = digits;
             return next_token;
         }
-    } else if (peek == '\\') {
+    } else if (peek_char == '\\' && !isdigit(next_char)) {
         s->current += 2;
         next_token.length = 2;
-        if (next == 'A') {
+
+        if (!has_next(s)) {
+            fprintf(
+                stderr,
+                "Trailing \\" "\n"
+                "\\ must be followed by something" "\n"
+                "Use `\\\\\\\\` in your pattern to match a literal \\" "\n"
+            );
+            exit(1);
+        }
+
+        if (next_char == 'A') {
             next_token.type = StartAnchor;
             next_token.lexeme = "\\A";
-        } else if (next == 'b') {
+        } else if (next_char == 'b') {
             next_token.type = WordBoundaryAnchor;
             next_token.lexeme = "\\b";
-        } else if (next == 'B') {
+        } else if (next_char == 'B') {
             next_token.type = NonWordBoundaryAnchor;
             next_token.lexeme = "\\B";
-        } else if (next == 'd') {
+        } else if (next_char == 'd') {
             next_token.type = DigitClass;
             next_token.lexeme = "\\d";
-        } else if (next == 'D') {
+        } else if (next_char == 'D') {
             next_token.type = NonDigitClass;
             next_token.lexeme = "\\D";
-        } else if (next == 'w') {
+        } else if (next_char == 'w') {
             next_token.type = WordCharacterClass;
             next_token.lexeme = "\\w";
-        } else if (next == 'W') {
+        } else if (next_char == 'W') {
             next_token.type = NonWordCharacterClass;
             next_token.lexeme = "\\W";
-        } else if (next == 's') {
+        } else if (next_char == 's') {
             next_token.type = WhitespaceClass;
             next_token.lexeme = "\\s";
-        } else if (next == 'S') {
+        } else if (next_char == 'S') {
             next_token.type = NonWhitespaceClass;
             next_token.lexeme = "\\S";
-        } else if (next == 'Z') {
+        } else if (next_char == 'Z') {
             next_token.type = EndAnchor;
             next_token.lexeme = "\\Z";
         } else if (!has_next(s)) {
@@ -232,11 +243,11 @@ Token get_next_token(Scanner* s) {
                 "Use \"\\\\\\\\\" in your pattern to match a literal \\" "\n"
             );
             exit(1);
-        } else if(!is_metacharacter(next)) {
+        } else if(!is_metacharacter(next_char)) {
             fprintf(
                 stderr,
-                "Bad escape \\%c at position %lu" "\n"
-                "Use \"\\\\\\\\%c\" in your pattern to match a literal \\ followed by %c" "\n",
+                "Invalid regular expression escape \\%c at position %lu" "\n"
+                "Use `\\\\\\\\%c` in your pattern to match a literal \\ followed by %c" "\n",
                 s->source[s->current],
                 s->current == 0 ? 0 : s->current-1,
                 s->source[s->current],
@@ -251,9 +262,31 @@ Token get_next_token(Scanner* s) {
             return next_token;
         }
         s->current -= 2;
+    } else if (peek_char == '\\' && isdigit(next_char)) {
+        if (next_char != '0') {
+            s->current++;
+            size_t digits = 0;
+            while (isdigit(get_peek_char(s))) {
+                digits++;
+                s->current++;
+            }
+            next_token.type = Backreference;
+            next_token.lexeme = malloc(digits);
+            memcpy(next_token.lexeme, s->source + (s->current - digits), digits);
+            next_token.length = digits;
+            return next_token;
+        } else {
+            fprintf(
+                stderr,
+                "Invalid regular expression escape \\0 at position %lu" "\n"
+                "Use `\\\\\\\\0` in your pattern to match a literal \\ followed by 0" "\n",
+                s->current == 0 ? 0 : s->current-1
+            );
+            exit(1);
+        }
     }
 
-    switch (peek) {
+    switch (peek_char) {
         case '[':
             if (s->inside_brackets) {
                 char* caret = malloc(s->source_length);
@@ -264,12 +297,12 @@ Token get_next_token(Scanner* s) {
                     stderr,
                     "Nested [ at position %lu" "\n"
                     "%s" "\n" "%s" "\n"
-                    "Use \\[ to match a literal [ inside a character class" "\n"
-                    "Use \\] to match a literal ] inside a character class" "\n",
+                    "Use `\\[` to match a literal [ inside a character class" "\n"
+                    "Use `\\[` to match a literal ] inside a character class" "\n",
                     s->current, s->source, caret
                 );
                 exit(1);
-            } else if (next == ']') {
+            } else if (next_char == ']') {
                 char* caret = malloc(s->source_length);
                 for (size_t i = 0;i < s->current;i++) caret[i] = ' ';
                 caret[s->current] = '^';
@@ -279,12 +312,12 @@ Token get_next_token(Scanner* s) {
                     stderr,
                     "Empty character class at position %lu" "\n"
                     "%s" "\n" "%s" "\n"
-                    "Use \\[\\] to match a [ followed by ]" "\n"
-                    "Use \\] to match a literal ] inside a character class" "\n",
+                    "Use `\\[\\]` to match a [ followed by ]" "\n"
+                    "Use `\\]` to match a literal ] inside a character class" "\n",
                     s->current, s->source, caret
                 );
                 exit(1);
-            } else if (next == '^' && get_char(s, s->current+2) == ']') {
+            } else if (next_char == '^' && get_char(s, s->current+2) == ']') {
                 char* caret = malloc(s->source_length);
                 for (size_t i = 0;i < s->current+1;i++) caret[i] = ' ';
                 caret[s->current+1] = '^';
@@ -293,7 +326,7 @@ Token get_next_token(Scanner* s) {
                     stderr,
                     "Using ^ alone inside a character class at position %lu" "\n"
                     "%s" "\n" "%s" "\n"
-                    "Write [\\^] to use ^ inside a character class" "\n"
+                    "Write `[\\^]` to use ^ inside a character class" "\n"
                     "Or make ^ the first character after [ if there are other characters inside [ and ]" "\n",
                     s->current+1, s->source, caret
                 );
@@ -314,7 +347,7 @@ Token get_next_token(Scanner* s) {
                     stderr,
                     "Unmatched ] at position %lu" "\n"
                     "%s" "\n" "%s" "\n"
-                    "Use \\] to match a literal ]" "\n",
+                    "Use `\\]` to match a literal ]" "\n",
                     s->current, s->source, caret
                 );
                 exit(1);
@@ -337,7 +370,7 @@ Token get_next_token(Scanner* s) {
                     s->current, s->source, caret
                 );
                 exit(1);
-            } else if (next == '}') {
+            } else if (next_char == '}') {
                 char* caret = malloc(s->source_length);
                 for (size_t i = 0;i < s->current;i++) caret[i] = ' ';
                 caret[s->current] = '^';
@@ -347,7 +380,7 @@ Token get_next_token(Scanner* s) {
                     stderr,
                     "Empty braces quantifieri at position %lu" "\n"
                     "%s" "\n" "%s" "\n"
-                    "Use \\{\\} to match a { followed by }" "\n",
+                    "Use `\\{\\}` to match a { followed by }" "\n",
                     s->current, s->source, caret
                 );
                 exit(1);
@@ -367,7 +400,7 @@ Token get_next_token(Scanner* s) {
                     stderr,
                     "Unmatched } at position %lu" "\n"
                     "%s" "\n" "%s" "\n"
-                    "Use \\} to match a literal }" "\n",
+                    "Use `\\}` to match a literal }" "\n",
                     s->current, s->source, caret
                 );
                 exit(1);
@@ -392,7 +425,7 @@ Token get_next_token(Scanner* s) {
                     stderr,
                     "Unmatched ) at position %lu" "\n"
                     "%s" "\n" "%s" "\n"
-                    "Use \\) to match a literal )" "\n",
+                    "Use `\\)` to match a literal )" "\n",
                     s->current, s->source, caret
                 );
                 exit(1);
@@ -406,12 +439,12 @@ Token get_next_token(Scanner* s) {
             break;
 
         case '?':
-            if (next == '?') {
+            if (next_char == '?') {
                 s->current++;
                 next_token.type = LazyMark;
                 next_token.lexeme = "??";
                 next_token.length = 2;
-            } else if (next == '+') {
+            } else if (next_char == '+') {
                 s->current++;
                 next_token.type = PossessiveMark;
                 next_token.lexeme = "?+";
@@ -422,12 +455,12 @@ Token get_next_token(Scanner* s) {
             break;
 
         case '*':
-            if (next == '?') {
+            if (next_char == '?') {
                 s->current++;
                 next_token.type = LazyStar;
                 next_token.lexeme = "*?";
                 next_token.length = 2;
-            } else if (next == '+') {
+            } else if (next_char == '+') {
                 s->current++;
                 next_token.type = PossessiveStar;
                 next_token.lexeme = "*+";
@@ -438,12 +471,12 @@ Token get_next_token(Scanner* s) {
             break;
 
         case '+':
-            if (next == '?') {
+            if (next_char == '?') {
                 s->current++;
                 next_token.type = LazyPlus;
                 next_token.lexeme = "+?";
                 next_token.length = 2;
-            } else if (next == '+') {
+            } else if (next_char == '+') {
                 s->current++;
                 next_token.type = PossessivePlus;
                 next_token.lexeme = "++";
