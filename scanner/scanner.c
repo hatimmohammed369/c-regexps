@@ -250,6 +250,70 @@ Token get_next_token(Scanner* s) {
             next_token.lexeme = malloc(digits);
             memcpy(next_token.lexeme, s->source + slash_pos + 1, digits);
             next_token.length = digits + 1;
+        } else if (next_char == 'g') {
+            s->current++; // Move past g
+            if ((peek_char = get_peek_char(s)) == '<') {
+                s->current++; // Move past <
+                size_t chars = 0;
+                while (has_next(s) && (peek_char = get_peek_char(s)) != '>') {
+                    chars++;
+                    s->current++;
+                }
+                if (peek_char == '>') {
+                    s->current++; // Move past >
+                    next_token.lexeme = malloc(chars);
+                    memcpy(next_token.lexeme, s->source + slash_pos + 3, chars);
+                    bool is_group_number = isdigit(next_token.lexeme[0]);
+                    for(size_t i = 1;i < chars && is_group_number;i++) is_group_number = isdigit(next_token.lexeme[i]);
+                    if (is_group_number) {
+                        next_token.type = Backreference;
+                        next_token.length = s->current - slash_pos;
+                    } else {
+                        bool is_group_name = next_token.lexeme[0] == '_' && isalpha(next_token.lexeme[0]);
+                        for(size_t i = 1;i < chars && is_group_number;i++)
+                            is_group_name = isalnum(next_token.lexeme[i]);
+                        if (is_group_name) {
+                            next_token.type = Backreference;
+                            next_token.length = s->current - slash_pos;
+                        } else {
+                            char* caret = malloc(s->source_length);
+                            size_t i = 0;
+                            for (;i < slash_pos + 3;i++) caret[i] = ' ';
+                            for (size_t k = 1; k <= chars; k++) {
+                                caret[i] = '^'; i++;
+                            }
+                            for (;i < s->source_length;i++) caret[i] = ' ';
+                            fprintf(
+                                stderr,
+                                "Invalid group number or name `%s` in backreference at %lu" "\n"
+                                "%s" "\n" "%s" "\n"
+                                "Use a positive integer starting from 1 or any alphanumeric string starting with a non-digit" "\n"
+                                "Otherwise use `\\\\\\\\g` in your pattern to match a \\ followed by `g`" "\n",
+                                next_token.lexeme, slash_pos,
+                                s->source, caret
+                            );
+                            exit(1);
+                        }
+                    }
+                }
+            } else {
+                char* caret = malloc(s->source_length);
+                size_t i = 0;
+                for (;i < slash_pos;i++) caret[i] = ' ';
+                caret[i] = '^'; i++;
+                caret[i] = '^'; i++;
+                for (;i < s->source_length;i++) caret[i] = ' ';
+                fprintf(
+                    stderr,
+                    "Expected numeric backreference `\\g<GROUP_NUMBER>` or named backreference `\\g<group_name>` at %lu" "\n"
+                    "%s" "\n" "%s" "\n"
+                    "Use a positive integer starting from 1 or any alphanumeric string starting with a non-digit" "\n"
+                    "Otherwise use `\\\\\\\\g` in your pattern to match a \\ followed by `g`" "\n",
+                    slash_pos,
+                    s->source, caret
+                );
+                exit(1);
+            }
         } else if (!is_metacharacter(next_char)) {
             char* caret = malloc(s->source_length);
             size_t i = 0;
