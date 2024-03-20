@@ -191,100 +191,59 @@ Token get_next_token(Scanner* s) {
             next_token.length = digits;
             return next_token;
         }
-    } else if (peek_char == '\\' && !isdigit(next_char)) {
-        s->current += 2;
-        next_token.length = 2;
+    } else if (peek_char == '\\') {
+        size_t slash_pos = s->current;
+        s->current += 1; // Move past slash
 
         if (!has_next(s)) {
             fprintf(
                 stderr,
-                "Trailing \\" "\n"
+                "Trailing \\ at end of pattern" "\n"
                 "\\ must be followed by something" "\n"
                 "Use `\\\\\\\\` in your pattern to match a literal \\" "\n"
             );
             exit(1);
         }
 
-        if (next_char == 'A') {
-            next_token.type = StartAnchor;
-            next_token.lexeme = "\\A";
-        } else if (next_char == 'b') {
-            next_token.type = WordBoundaryAnchor;
-            next_token.lexeme = "\\b";
-        } else if (next_char == 'B') {
-            next_token.type = NonWordBoundaryAnchor;
-            next_token.lexeme = "\\B";
-        } else if (next_char == 'd') {
-            next_token.type = DigitClass;
-            next_token.lexeme = "\\d";
-        } else if (next_char == 'D') {
-            next_token.type = NonDigitClass;
-            next_token.lexeme = "\\D";
-        } else if (next_char == 'w') {
-            next_token.type = WordCharacterClass;
-            next_token.lexeme = "\\w";
-        } else if (next_char == 'W') {
-            next_token.type = NonWordCharacterClass;
-            next_token.lexeme = "\\W";
-        } else if (next_char == 's') {
-            next_token.type = WhitespaceClass;
-            next_token.lexeme = "\\s";
-        } else if (next_char == 'S') {
-            next_token.type = NonWhitespaceClass;
-            next_token.lexeme = "\\S";
-        } else if (next_char == 'Z') {
-            next_token.type = EndAnchor;
-            next_token.lexeme = "\\Z";
-        } else if (!has_next(s)) {
-            fprintf(
-                stderr,
-                "Trailing \\" "\n"
-                "\\ must be followed by something" "\n"
-                "Use \"\\\\\\\\\" in your pattern to match a literal \\" "\n"
-            );
-            exit(1);
-        } else if(!is_metacharacter(next_char)) {
-            fprintf(
-                stderr,
-                "Invalid regular expression escape \\%c at position %lu" "\n"
-                "Use `\\\\\\\\%c` in your pattern to match a literal \\ followed by %c" "\n",
-                s->source[s->current],
-                s->current == 0 ? 0 : s->current-1,
-                s->source[s->current],
-                s->source[s->current]
-            );
-            exit(1);
+        if (is_anchor_char(next_char) || is_slash_class_char(next_char)) {
+            s->current++; // Move past slash class or anchor character
+            next_token.length = 2;
+
+            if (next_char == 'A') {
+                next_token.type = StartAnchor;
+                next_token.lexeme = "\\A";
+            } else if (next_char == 'b') {
+                next_token.type = WordBoundaryAnchor;
+                next_token.lexeme = "\\b";
+            } else if (next_char == 'B') {
+                next_token.type = NonWordBoundaryAnchor;
+                next_token.lexeme = "\\B";
+            } else if (next_char == 'd') {
+                next_token.type = DigitClass;
+                next_token.lexeme = "\\d";
+            } else if (next_char == 'D') {
+                next_token.type = NonDigitClass;
+                next_token.lexeme = "\\D";
+            } else if (next_char == 'w') {
+                next_token.type = WordCharacterClass;
+                next_token.lexeme = "\\w";
+            } else if (next_char == 'W') {
+                next_token.type = NonWordCharacterClass;
+                next_token.lexeme = "\\W";
+            } else if (next_char == 's') {
+                next_token.type = WhitespaceClass;
+                next_token.lexeme = "\\s";
+            } else if (next_char == 'S') {
+                next_token.type = NonWhitespaceClass;
+                next_token.lexeme = "\\S";
+            } else if (next_char == 'Z') {
+                next_token.type = EndAnchor;
+                next_token.lexeme = "\\Z";
+            }
         }
 
-        char c0 = next_token.lexeme[0];
-        char c1 = next_token.lexeme[1];
-        if (c0 == '\\' && (is_anchor_char(c1) || is_slash_class_char(c1))) {
-            return next_token;
-        }
-        s->current -= 2;
-    } else if (peek_char == '\\' && isdigit(next_char)) {
-        if (next_char != '0') {
-            s->current++;
-            size_t digits = 0;
-            while (isdigit(get_peek_char(s))) {
-                digits++;
-                s->current++;
-            }
-            next_token.type = Backreference;
-            next_token.lexeme = malloc(digits);
-            memcpy(next_token.lexeme, s->source + (s->current - digits), digits);
-            next_token.length = digits;
-            return next_token;
-        } else {
-            fprintf(
-                stderr,
-                "Invalid regular expression escape \\0 at position %lu" "\n"
-                "Use `\\\\\\\\0` in your pattern to match a literal \\ followed by 0" "\n",
-                s->current == 0 ? 0 : s->current-1
-            );
-            exit(1);
-        }
-    }
+        return next_token;
+    } 
 
     switch (peek_char) {
         case '[':
