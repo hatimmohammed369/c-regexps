@@ -240,34 +240,34 @@ Token get_next_token(Scanner* s) {
                 next_token.type = EndAnchor;
                 next_token.lexeme = "\\Z";
             }
-        } else if (isdigit(next_char)) {
-            if (get_peek_char(s) == '0') {
-                char* caret = malloc(s->source_length);
-                size_t i = 0;
-                for (;i < slash_pos;i++) caret[i] = ' ';
-                caret[i] = '^'; i++;
-                caret[i] = '^'; i++;
-                for (;i < s->source_length;i++) caret[i] = ' ';
-                fprintf(
-                    stderr,
-                    "Invalid regular expression escape `\\0` at position %lu" "\n"
-                    "%s" "\n" "%s" "\n"
-                    "Use `\\\\\\\\0` in your pattern to match a \\ followed by 0" "\n",
-                    slash_pos,
-                    s->source, caret
-                );
-                exit(1);
-            } else {
-                size_t digits = 0;
-                while (isdigit(get_peek_char(s))) {
-                    digits++;
-                    s->current++;
-                }
-                next_token.type = Backreference;
-                next_token.lexeme = malloc(digits);
-                memcpy(next_token.lexeme, s->source + slash_pos + 1, digits);
-                next_token.length = digits + 1;
+        } else if (next_char != '0' && isdigit(next_char)) {
+            size_t digits = 0;
+            while (isdigit(get_peek_char(s))) {
+                digits++;
+                s->current++;
             }
+            next_token.type = Backreference;
+            next_token.lexeme = malloc(digits);
+            memcpy(next_token.lexeme, s->source + slash_pos + 1, digits);
+            next_token.length = digits + 1;
+        } else if (!is_metacharacter(next_char)) {
+            char* caret = malloc(s->source_length);
+            size_t i = 0;
+            for (;i < slash_pos;i++) caret[i] = ' ';
+            caret[i] = '^'; i++;
+            caret[i] = '^'; i++;
+            for (;i < s->source_length;i++) caret[i] = ' ';
+            char invalid_escape_char = s->source[slash_pos + 1];
+            fprintf(
+                stderr,
+                "Invalid regular expression escape `\\%c` at position %lu" "\n"
+                "%s" "\n" "%s" "\n"
+                "Use `\\\\\\\\%c` in your pattern to match a \\ followed by %c" "\n",
+                invalid_escape_char, slash_pos,
+                s->source, caret,
+                invalid_escape_char, invalid_escape_char
+            );
+            exit(1);
         }
 
         return next_token;
